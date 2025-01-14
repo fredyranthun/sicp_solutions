@@ -58,3 +58,102 @@
     [else (fib-iter (+ (* b q) (* a q) (* a p)) (+ (* b p) (* a q)) p q (- count 1))]))
 
 (fib 10)
+
+;; Exercise 1.20
+
+(define (gcd a b)
+  (if (= b 0)
+      a
+      (gcd b (remainder a b))))
+
+;; Applicative Order Evaluation
+(gcd 206 40)
+(gcd 40 (remainder 206 40)) ; 1
+(gcd 40 6)
+(gcd 6 (remainder 40 6)) ; 2
+(gcd 6 4)
+(gcd 4 (remainder 6 4)) ; 3
+(gcd 4 2)
+(gcd 2 (remainder 4 2)) ; 4
+(gcd 2 0)
+2
+
+;; Normal Order Evaluation
+(gcd 206 40)
+(gcd 40 (remainder 206 40))
+(gcd (remainder 206 40) (remainder 40 (remainder 206 40)))
+;; and continues until b equals 0.
+
+(define (smallest-divisor n)
+  (find-divisor n 2))
+(define (find-divisor n test-divisor)
+  (cond
+    [(> (sqr test-divisor) n) n]
+    [(divides? test-divisor n) test-divisor]
+    [else (find-divisor n (next test-divisor))]))
+(define (divides? a b)
+  (= (remainder b a) 0))
+(define (next n)
+  (if (= n 2)
+      3
+      (+ n 2)))
+
+(define (prime? n)
+  (= n (smallest-divisor n)))
+
+(prime? 11)
+(prime? 21)
+(prime? 1023)
+
+(define (expmod base exp m)
+  (cond
+    [(= exp 0) 1]
+    [(even? exp) (remainder (sqr (expmod base (/ exp 2) m)) m)]
+    [else (remainder (* base (expmod base (- exp 1) m)) m)]))
+
+(define (fermat-test n)
+  (define (try-it a)
+    (= (expmod a n n) a))
+  (try-it (+ 1 (random (- n 1)))))
+
+(define (fast-prime? n times)
+  (cond
+    [(= times 0) true]
+    [(fermat-test n) (fast-prime? n (- times 1))]
+    [else false]))
+
+;; Exercise 1.21
+
+(smallest-divisor 199) ; 199
+(smallest-divisor 1999) ; 1999
+(smallest-divisor 19999) ; 7
+
+;; 1.22
+(define (current-time-seconds)
+  (/ (current-inexact-milliseconds) 1000))
+
+(define (timed-prime-test n)
+  (newline)
+  (display n)
+  (start-prime-test n (current-time-seconds)))
+(define (start-prime-test n start-time)
+  (cond
+    [(prime? n) (report-prime (- (current-time-seconds) start-time))]
+    [else false]))
+(define (report-prime elapsed-time)
+  (display " *** ")
+  (display elapsed-time)
+  true)
+
+(define (search-for-primes s n)
+  (cond
+    [(= n 0)
+     (newline)
+     (display "Finish.")]
+    [(even? s) (search-for-primes (+ s 1) n)]
+    [(timed-prime-test s) (search-for-primes (+ s 2) (- n 1))]
+    [else (search-for-primes (+ s 2) n)]))
+
+(search-for-primes 1000 3)
+(search-for-primes 10000 3)
+(search-for-primes 1000000 3)
