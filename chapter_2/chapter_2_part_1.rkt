@@ -268,6 +268,7 @@
 
 ;; Exercise 2.29
 
+;; a.
 (define (make-mobile left right)
   (list left right))
 
@@ -284,6 +285,7 @@
 (define (branch-structure branch)
   (cadr branch))
 
+;; b
 (define (weight-mobile mobile)
   (if (null? mobile)
       0
@@ -299,3 +301,75 @@
   (weight-mobile mobile))
 
 (total-weight (make-mobile (make-branch 1 2) (make-branch 3 4)))
+
+;; c.
+
+(define (balanced? mobile)
+  (and (= (torque (left-branch mobile)) (torque (right-branch mobile)))
+       (balanced-branch? (left-branch mobile))
+       (balanced-branch? (right-branch mobile))))
+
+(define (torque branch)
+  (* (weight-branch branch) (branch-length branch)))
+
+(define (balanced-branch? branch)
+  (let ([struct (branch-structure branch)])
+    (if (number? struct)
+        true
+        (balanced? struct))))
+
+;; d.
+;; would need to change the selectors, instead of cadr, would use cdr.
+
+;; Exercise 2.30
+
+(define (square-tree tree)
+  (map (lambda (sub-tree)
+         (if (pair? sub-tree)
+             (square-tree sub-tree)
+             (sqr sub-tree)))
+       tree))
+
+(define (square-tree-2 tree)
+  (cond
+    [(null? tree) null]
+    [(pair? (car tree)) (cons (square-tree-2 (car tree)) (square-tree-2 (cdr tree)))]
+    [else (cons (sqr (car tree)) (square-tree-2 (cdr tree)))]))
+
+(square-tree (list 1 (list 2 (list 3 4) 5) (list 6 7)))
+(square-tree-2 (list 1 (list 2 (list 3 4) 5) (list 6 7)))
+
+;; Exercise 2.31
+
+(define (tree-map f tree)
+  (map (lambda (sub-tree)
+         (if (pair? sub-tree)
+             (tree-map f sub-tree)
+             (f sub-tree)))
+       tree))
+
+(define (square-tree-3 tree)
+  (tree-map sqr tree))
+(square-tree-3 (list 1 (list 2 (list 3 4) 5) (list 6 7)))
+
+;; Exercise 2.32
+
+(define (subsets s)
+  (if (null? s)
+      (list null)
+      (let ([rest (subsets (cdr s))]) (append rest (map (lambda (x) (cons (car s) x)) rest)))))
+
+(subsets (list 1 2 3))
+;; (1 2 3)
+;; rest -> subsets (2 3)
+;; rest -> subsets (3)
+;; rest -> subsets '() -> list '()
+
+;; It works because it takes all the values without the car and append to them
+;; those list of values with the car.
+;; Starting with the list with a empty set, we add the last element (3) to it and append.
+;; -> '() (3)
+;; Then we take the previous element and add to all of the sets:
+;; -> '() (3) (2) (2 3)
+;; And so on:
+;; -> '() (3) (2) (2 3) (1) (1 3) (1 2) (1 2 3)
